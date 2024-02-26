@@ -2,26 +2,48 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"os"
+	"encoding/json"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
-func HandleRequest(ctx context.Context, event *events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
-	if event == nil {
-		return nil, fmt.Errorf("received nil event")
+type ShortenRequest struct {
+	TargetUrl string `json:"targetUrl"`
+}
+
+type ShortenResponse struct {
+	ShortenedUrl string `json:"shortenedUrl"`
+}
+
+func HandleShortenRequest(ctx context.Context, event *events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
+	var shortenRequest ShortenRequest
+	err := json.Unmarshal([]byte(event.Body), &shortenRequest)
+	if err != nil {
+		return &events.APIGatewayProxyResponse{
+			StatusCode: 400,
+			Body:       "Invalid request",
+		}, nil
 	}
 
-	message := fmt.Sprintf("Hello World! _HANDLER=%s; %+v", os.Getenv("_HANDLER"), *event)
+	resp := ShortenResponse{
+		ShortenedUrl: "shortened-" + shortenRequest.TargetUrl,
+	}
+
+	respBody, err := json.Marshal(resp)
+	if err != nil {
+		return &events.APIGatewayProxyResponse{
+			StatusCode: 500,
+			Body:       "Internal server error",
+		}, nil
+	}
 
 	return &events.APIGatewayProxyResponse{
 		StatusCode: 200,
-		Body:       message,
+		Body:       string(respBody),
 	}, nil
 }
 
 func main() {
-	lambda.Start(HandleRequest)
+	lambda.Start(HandleShortenRequest)
 }

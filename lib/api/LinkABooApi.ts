@@ -10,14 +10,15 @@ export class LinkABooApi extends Construct {
       restApiName: "Link-a-boo api",
     });
 
-    const handler = new lambda.Function(this, "shorten-lambda", {
+    const shortenLambda = new lambda.Function(this, "shortenLambda", {
       runtime: lambda.Runtime.PROVIDED_AL2,
       code: lambda.Code.fromDockerBuild("lambda/shorten"),
       handler: "shorten",
     });
 
-    const shortenIntegration = new apigateway.LambdaIntegration(handler);
+    const shortenIntegration = new apigateway.LambdaIntegration(shortenLambda);
 
-    api.root.addMethod("GET", shortenIntegration);
+    const shortenResource = api.root.addResource("shorten");
+    shortenResource.addMethod("POST", shortenIntegration);
   }
 }

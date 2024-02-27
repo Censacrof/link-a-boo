@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -44,6 +47,24 @@ func HandleShortenRequest(ctx context.Context, event *events.APIGatewayProxyRequ
 	}, nil
 }
 
+func getHandler() (interface{}, error) {
+	handlerName := os.Getenv("_HANDLER")
+
+	switch handlerName {
+	case "shorten":
+		return HandleShortenRequest, nil
+
+	default:
+		return nil, errors.New(fmt.Sprintf("Invalid handler %s", handlerName))
+	}
+}
+
 func main() {
-	lambda.Start(HandleShortenRequest)
+	handler, err := getHandler()
+	if err != nil {
+		fmt.Printf("%v", err)
+		os.Exit(1)
+	}
+
+	lambda.Start(handler)
 }

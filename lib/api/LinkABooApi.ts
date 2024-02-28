@@ -1,9 +1,14 @@
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import { Construct } from "constructs";
+import { LinkABooDb } from "../db/LinkABooDb";
+
+export type LinkABooApiProps = {
+  db: LinkABooDb;
+};
 
 export class LinkABooApi extends Construct {
-  constructor(scope: Construct, id: string) {
+  constructor(scope: Construct, id: string, props: LinkABooApiProps) {
     super(scope, id);
 
     const api = new apigateway.RestApi(this, "LinkABooApi", {
@@ -14,6 +19,9 @@ export class LinkABooApi extends Construct {
       runtime: lambda.Runtime.PROVIDED_AL2,
       code: lambda.Code.fromDockerBuild("lambda/shorten"),
       handler: "shorten",
+      environment: {
+        URLS_TABLE_NAME: props.db.urlsTable.tableName,
+      },
     });
 
     const shortenIntegration = new apigateway.LambdaIntegration(shortenLambda);

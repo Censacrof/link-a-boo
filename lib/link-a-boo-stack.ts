@@ -8,7 +8,9 @@ export class LinkABooStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    new LinkABooDb(this, "LinkABooDb");
-    new LinkABooApi(this, "LinkABooApi");
+    const db = new LinkABooDb(this, "LinkABooDb");
+    new LinkABooApi(this, "LinkABooApi", {
+      db,
+    });
   }
 }

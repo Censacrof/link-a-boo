@@ -24,6 +24,8 @@ export class LinkABooApi extends Construct {
       },
     });
 
+    props.db.urlsTable.grantReadWriteData(shortenLambda);
+
     const shortenIntegration = new apigateway.LambdaIntegration(shortenLambda);
 
     const shortenResource = api.root.addResource("shorten");

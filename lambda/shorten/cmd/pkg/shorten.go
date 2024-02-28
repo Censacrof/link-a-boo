@@ -78,8 +78,8 @@ func HandleShortenRequest(ctx context.Context, event *events.APIGatewayProxyRequ
 }
 
 type ShortenedUrlDocument struct {
-	Slug string `json:"slug"`
-	Url  string `json:"url"`
+	Slug string `dynamodbav:"slug"`
+	Url  string `dynamodbav:"url"`
 }
 
 func AddUrlToTable(ctx context.Context, client dynamodb.Client, url url.URL) (string, error) {
@@ -106,5 +106,5 @@ func AddUrlToTable(ctx context.Context, client dynamodb.Client, url url.URL) (st
 		return "", fmt.Errorf("Put in table '%s' failed: %w", tableName, err)
 	}
 
-	return "", nil
+	return Slug, nil
 }

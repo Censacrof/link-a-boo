@@ -17,7 +17,11 @@ export class LinkABooApi extends Construct {
 
     const shortenLambda = new lambda.Function(this, "shortenLambda", {
       runtime: lambda.Runtime.PROVIDED_AL2,
-      code: lambda.Code.fromDockerBuild("lambda/shorten"),
+      code: lambda.Code.fromDockerBuild("lambda/go", {
+        buildArgs: {
+          CMD_NAME: "shorten",
+        },
+      }),
       handler: "shorten",
       environment: {
         URLS_TABLE_NAME: props.db.urlsTable.tableName,

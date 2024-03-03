@@ -12,6 +12,45 @@ import (
 	"github.com/google/uuid"
 )
 
+type ShortenedUrlTable struct {
+}
+
+var shortenedUrlTable *ShortenedUrlTable = nil
+
+func GetShortenedUrlTable() *ShortenedUrlTable {
+	if shortenedUrlTable == nil {
+		shortenedUrlTable = &ShortenedUrlTable{}
+	}
+
+	return shortenedUrlTable
+}
+
+func (self *ShortenedUrlTable) Put(ctx context.Context, shortenedUrl ShortenedUrl) error {
+	dbClient, err := GetDbClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	item, err := attributevalue.MarshalMap(shortenedUrl)
+
+	tableName := os.Getenv("URLS_TABLE_NAME")
+
+	if err != nil {
+		return fmt.Errorf("Put in table '%s' failed: %w", tableName, err)
+	}
+
+	_, err = dbClient.ddbClient.PutItem(ctx, &dynamodb.PutItemInput{
+		Item:      item,
+		TableName: aws.String(tableName),
+	})
+
+	if err != nil {
+		return fmt.Errorf("Put in table '%s' failed: %w", tableName, err)
+	}
+
+	return nil
+}
+
 type ShortenedUrl struct {
 	Slug string `dynamodbav:"slug"`
 	Url  string `dynamodbav:"url"`
@@ -24,25 +63,4 @@ func NewShortenedUrl(url url.URL) ShortenedUrl {
 		Slug: slug,
 		Url:  url.String(),
 	}
-}
-
-func (self *ShortenedUrl) Put(ctx context.Context, client dynamodb.Client) error {
-	item, err := attributevalue.MarshalMap(self)
-
-	tableName := os.Getenv("URLS_TABLE_NAME")
-
-	if err != nil {
-		return fmt.Errorf("Put in table '%s' failed: %w", tableName, err)
-	}
-
-	_, err = client.PutItem(ctx, &dynamodb.PutItemInput{
-		Item:      item,
-		TableName: aws.String(tableName),
-	})
-
-	if err != nil {
-		return fmt.Errorf("Put in table '%s' failed: %w", tableName, err)
-	}
-
-	return nil
 }

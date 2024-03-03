@@ -12,8 +12,6 @@ import (
 	"github.com/Censacrof/link-a-boo/lambda/shorten/pkg/db"
 	"github.com/Censacrof/link-a-boo/lambda/shorten/pkg/response"
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -27,18 +25,13 @@ type ShortenResponse struct {
 }
 
 func HandleShortenRequest(ctx context.Context, event *events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
-	cfg, err := config.LoadDefaultConfig(ctx)
-	if err != nil {
-		return response.NewErrorResponse(fmt.Sprintf("Can't load default configuration: %v", err)).ToApiGatewayProxyResponse(500)
-	}
-
 	var shortenRequest ShortenRequest
 	unmarshalErr := json.Unmarshal([]byte(event.Body), &shortenRequest)
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	validationErr := validate.Struct(shortenRequest)
 
-	err = errors.Join(unmarshalErr, validationErr)
+	err := errors.Join(unmarshalErr, validationErr)
 	if err != nil {
 		return response.NewErrorResponse(fmt.Sprintf("Invalid request: %v", err)).ToApiGatewayProxyResponse(400)
 	}
@@ -49,9 +42,7 @@ func HandleShortenRequest(ctx context.Context, event *events.APIGatewayProxyRequ
 	}
 
 	shortenedUrl := db.NewShortenedUrl(*targetUrl)
-	ddbClient := dynamodb.NewFromConfig(cfg)
-
-	err = shortenedUrl.Put(ctx, *ddbClient)
+	err = db.GetShortenedUrlTable().Put(ctx, shortenedUrl)
 
 	if err != nil {
 		return response.NewErrorResponse(fmt.Sprintf("Internal server error: %v", err)).ToApiGatewayProxyResponse(500)

@@ -1,4 +1,4 @@
-module github.com/Censacrof/link-a-boo/lambda/shorten
+module github.com/Censacrof/link-a-boo/lambda/go
 
 go 1.22.0
 

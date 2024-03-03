@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/Censacrof/link-a-boo/lambda/go/pkg/db"
+	"github.com/Censacrof/link-a-boo/lambda/go/pkg/response"
 	"github.com/aws/aws-lambda-go/lambda"
 
-	"github.com/Censacrof/link-a-boo/lambda/shorten/pkg/db"
-	"github.com/Censacrof/link-a-boo/lambda/shorten/pkg/response"
 	"github.com/aws/aws-lambda-go/events"
 
 	"github.com/go-playground/validator/v10"

@@ -29,11 +29,11 @@ func NewShortenedUrl(url url.URL) ShortenedUrl {
 func (self *ShortenedUrl) Put(ctx context.Context, client dynamodb.Client) error {
 	item, err := attributevalue.MarshalMap(self)
 
-	if err != nil {
-		return fmt.Errorf("Can't add url to db: %w", err)
-	}
-
 	tableName := os.Getenv("URLS_TABLE_NAME")
+
+	if err != nil {
+		return fmt.Errorf("Put in table '%s' failed: %w", tableName, err)
+	}
 
 	_, err = client.PutItem(ctx, &dynamodb.PutItemInput{
 		Item:      item,

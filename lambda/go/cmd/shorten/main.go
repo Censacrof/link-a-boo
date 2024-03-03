@@ -3,18 +3,22 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/aws/aws-lambda-go/lambda"
 	"net/url"
+
+	"github.com/aws/aws-lambda-go/lambda"
 
 	"github.com/Censacrof/link-a-boo/lambda/shorten/pkg/db"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type ShortenRequest struct {
-	TargetUrl string `json:"targetUrl"`
+	TargetUrl string `json:"targetUrl" validate:"required,min=5"`
 }
 
 type ShortenResponse struct {
@@ -28,15 +32,19 @@ func HandleShortenRequest(ctx context.Context, event *events.APIGatewayProxyRequ
 			StatusCode: 500,
 			Body:       fmt.Sprintf("Can't load default configuration: %v", err),
 		}, nil
-
 	}
 
 	var shortenRequest ShortenRequest
-	err = json.Unmarshal([]byte(event.Body), &shortenRequest)
+	unmarshalErr := json.Unmarshal([]byte(event.Body), &shortenRequest)
+
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	validationErr := validate.Struct(shortenRequest)
+
+	err = errors.Join(unmarshalErr, validationErr)
 	if err != nil {
 		return &events.APIGatewayProxyResponse{
 			StatusCode: 400,
-			Body:       "Invalid request",
+			Body:       fmt.Sprintf("Invalid request: %v", err),
 		}, nil
 	}
 

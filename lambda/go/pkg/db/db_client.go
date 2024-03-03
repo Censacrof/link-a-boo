@@ -9,7 +9,7 @@ import (
 )
 
 type DbClient struct {
-	ddbClient *dynamodb.Client
+	DdbClient *dynamodb.Client
 }
 
 var dbClient *DbClient = nil
@@ -21,7 +21,7 @@ func newDbClient(ctx context.Context) (*DbClient, error) {
 	}
 
 	return &DbClient{
-		ddbClient: dynamodb.NewFromConfig(cfg),
+		DdbClient: dynamodb.NewFromConfig(cfg),
 	}, nil
 }
 

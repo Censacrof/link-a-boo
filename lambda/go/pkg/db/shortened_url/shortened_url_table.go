@@ -1,4 +1,4 @@
-package db
+package shortened_url
 
 import (
 	"context"
@@ -6,27 +6,15 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/Censacrof/link-a-boo/lambda/go/pkg/db"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/google/uuid"
 )
 
-type ShortenedUrlTable struct {
-}
-
-var shortenedUrlTable *ShortenedUrlTable = nil
-
-func GetShortenedUrlTable() *ShortenedUrlTable {
-	if shortenedUrlTable == nil {
-		shortenedUrlTable = &ShortenedUrlTable{}
-	}
-
-	return shortenedUrlTable
-}
-
-func (self *ShortenedUrlTable) Put(ctx context.Context, shortenedUrl ShortenedUrl) error {
-	dbClient, err := GetDbClient(ctx)
+func Put(ctx context.Context, shortenedUrl ShortenedUrl) error {
+	dbClient, err := db.GetDbClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -39,7 +27,7 @@ func (self *ShortenedUrlTable) Put(ctx context.Context, shortenedUrl ShortenedUr
 		return fmt.Errorf("Put in table '%s' failed: %w", tableName, err)
 	}
 
-	_, err = dbClient.ddbClient.PutItem(ctx, &dynamodb.PutItemInput{
+	_, err = dbClient.DdbClient.PutItem(ctx, &dynamodb.PutItemInput{
 		Item:      item,
 		TableName: aws.String(tableName),
 	})

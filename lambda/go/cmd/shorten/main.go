@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/Censacrof/link-a-boo/lambda/go/pkg/db"
+	"github.com/Censacrof/link-a-boo/lambda/go/pkg/db/shortened_url"
 	"github.com/Censacrof/link-a-boo/lambda/go/pkg/response"
 	"github.com/aws/aws-lambda-go/lambda"
 
@@ -41,8 +41,8 @@ func HandleShortenRequest(ctx context.Context, event *events.APIGatewayProxyRequ
 		return response.NewErrorResponse("Invalid targetUrl").ToApiGatewayProxyResponse(400)
 	}
 
-	shortenedUrl := db.NewShortenedUrl(*targetUrl)
-	err = db.GetShortenedUrlTable().Put(ctx, shortenedUrl)
+	shortenedUrl := shortened_url.NewShortenedUrl(*targetUrl)
+	err = shortened_url.Put(ctx, shortenedUrl)
 
 	if err != nil {
 		return response.NewErrorResponse(fmt.Sprintf("Internal server error: %v", err)).ToApiGatewayProxyResponse(500)

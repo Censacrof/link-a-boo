@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 
 	"github.com/Censacrof/link-a-boo/lambda/shorten/pkg/db"
+	"github.com/Censacrof/link-a-boo/lambda/shorten/pkg/response"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -28,10 +29,7 @@ type ShortenResponse struct {
 func HandleShortenRequest(ctx context.Context, event *events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
-		return &events.APIGatewayProxyResponse{
-			StatusCode: 500,
-			Body:       fmt.Sprintf("Can't load default configuration: %v", err),
-		}, nil
+		return response.NewErrorResponse(fmt.Sprintf("Can't load default configuration: %v", err)).ToApiGatewayProxyResponse(500)
 	}
 
 	var shortenRequest ShortenRequest
@@ -42,18 +40,12 @@ func HandleShortenRequest(ctx context.Context, event *events.APIGatewayProxyRequ
 
 	err = errors.Join(unmarshalErr, validationErr)
 	if err != nil {
-		return &events.APIGatewayProxyResponse{
-			StatusCode: 400,
-			Body:       fmt.Sprintf("Invalid request: %v", err),
-		}, nil
+		return response.NewErrorResponse(fmt.Sprintf("Invalid request: %v", err)).ToApiGatewayProxyResponse(400)
 	}
 
 	targetUrl, err := url.Parse(shortenRequest.TargetUrl)
 	if err != nil {
-		return &events.APIGatewayProxyResponse{
-			StatusCode: 400,
-			Body:       "Invalid targetUrl",
-		}, nil
+		return response.NewErrorResponse("Invalid targetUrl").ToApiGatewayProxyResponse(400)
 	}
 
 	shortenedUrl := db.NewShortenedUrl(*targetUrl)
@@ -62,28 +54,12 @@ func HandleShortenRequest(ctx context.Context, event *events.APIGatewayProxyRequ
 	err = shortenedUrl.Put(ctx, *ddbClient)
 
 	if err != nil {
-		return &events.APIGatewayProxyResponse{
-			StatusCode: 500,
-			Body:       fmt.Sprintf("Internal server error: %v", err),
-		}, nil
+		return response.NewErrorResponse(fmt.Sprintf("Internal server error: %v", err)).ToApiGatewayProxyResponse(500)
 	}
 
-	resp := ShortenResponse{
+	return response.NewOkResponse(ShortenResponse{
 		ShortenedUrl: shortenedUrl.Slug,
-	}
-
-	respBody, err := json.Marshal(resp)
-	if err != nil {
-		return &events.APIGatewayProxyResponse{
-			StatusCode: 500,
-			Body:       "Internal server error",
-		}, nil
-	}
-
-	return &events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Body:       string(respBody),
-	}, nil
+	}).ToApiGatewayProxyResponse(200)
 }
 
 func main() {

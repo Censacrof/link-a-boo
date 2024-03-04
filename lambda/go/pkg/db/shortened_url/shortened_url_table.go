@@ -46,12 +46,11 @@ func Get(ctx context.Context, slug string) (*ShortenedUrl, error) {
 		return nil, err
 	}
 
-	key := map[string]types.AttributeValue{
-		slug: &types.AttributeValueMemberS{Value: slug},
-	}
-
 	item, err := dbClient.DdbClient.GetItem(ctx, &dynamodb.GetItemInput{
-		Key: key,
+		TableName: aws.String(os.Getenv("URLS_TABLE_NAME")),
+		Key: map[string]types.AttributeValue{
+			slug: &types.AttributeValueMemberS{Value: slug},
+		},
 	})
 
 	if err != nil {

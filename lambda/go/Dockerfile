@@ -1,5 +1,4 @@
 FROM golang:latest
-ARG CMD_NAME
 WORKDIR /usr/src/app
 
 RUN mkdir -p /asset
@@ -10,4 +9,5 @@ RUN go mod download && go mod verify
 COPY . .
 RUN mkdir -p bin
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin ./cmd/...
+ARG CMD_NAME
 RUN mv ./bin/${CMD_NAME} /asset/bootstrap

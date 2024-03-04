@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/google/uuid"
 )
 
@@ -37,6 +38,37 @@ func Put(ctx context.Context, shortenedUrl ShortenedUrl) error {
 	}
 
 	return nil
+}
+
+func Get(ctx context.Context, slug string) (*ShortenedUrl, error) {
+	dbClient, err := db.GetDbClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	key := map[string]types.AttributeValue{
+		slug: &types.AttributeValueMemberS{Value: slug},
+	}
+
+	item, err := dbClient.DdbClient.GetItem(ctx, &dynamodb.GetItemInput{
+		Key: key,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if item == nil {
+		return nil, nil
+	}
+
+	var shortenedUrl ShortenedUrl
+	err = attributevalue.UnmarshalMap(item.Item, shortenedUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	return &shortenedUrl, nil
 }
 
 type ShortenedUrl struct {

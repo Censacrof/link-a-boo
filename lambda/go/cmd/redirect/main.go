@@ -30,10 +30,11 @@ func HandleRedirectRequest(ctx context.Context, event *events.APIGatewayProxyReq
 		return resp, err
 	}
 
+	resp.Headers = make(map[string]string)
 	resp.Headers["Location"] = shortenedUrl.Url
 	resp.Headers["Cache-Control"] = "max-age=180, private"
 
-	return resp, err
+	return resp, nil
 }
 
 func main() {

@@ -10,6 +10,10 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
+type redirectResult struct {
+	Location string `json:"location"`
+}
+
 func HandleRedirectRequest(ctx context.Context, event *events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
 	slug, ok := event.PathParameters["slug"]
 	if !ok {
@@ -25,7 +29,7 @@ func HandleRedirectRequest(ctx context.Context, event *events.APIGatewayProxyReq
 		return response.NewErrorResponse(fmt.Sprintf("Can't find URL corresponding to slug: %s", slug)).ToApiGatewayProxyResponse(404)
 	}
 
-	resp, err := response.NewOkResponse(fmt.Sprintf("Slug: %s", slug)).ToApiGatewayProxyResponse(301)
+	resp, err := response.NewOkResponse(redirectResult{Location: shortenedUrl.Url}).ToApiGatewayProxyResponse(301)
 	if err != nil {
 		return resp, err
 	}

@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
 
 	"github.com/Censacrof/link-a-boo/lambda/go/pkg/db/shortened_url"
 	"github.com/Censacrof/link-a-boo/lambda/go/pkg/response"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/google/uuid"
 
 	"github.com/aws/aws-lambda-go/events"
 
@@ -36,12 +36,12 @@ func HandleShortenRequest(ctx context.Context, event *events.APIGatewayProxyRequ
 		return response.NewErrorResponse(fmt.Sprintf("Invalid request: %v", err)).ToApiGatewayProxyResponse(400)
 	}
 
-	targetUrl, err := url.Parse(shortenRequest.TargetUrl)
+	slug := uuid.New()
+	shortenedUrl, err := shortened_url.New(shortenRequest.TargetUrl, slug.String())
 	if err != nil {
-		return response.NewErrorResponse("Invalid targetUrl").ToApiGatewayProxyResponse(400)
+		return response.NewErrorResponse(fmt.Sprintf("Invalid request: %v", err)).ToApiGatewayProxyResponse(400)
 	}
 
-	shortenedUrl := shortened_url.NewShortenedUrl(*targetUrl)
 	err = shortened_url.Put(ctx, shortenedUrl)
 
 	if err != nil {

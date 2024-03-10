@@ -2,6 +2,7 @@ package shortened_url
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -11,10 +12,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/google/uuid"
 )
 
-func Put(ctx context.Context, shortenedUrl ShortenedUrl) error {
+func Put(ctx context.Context, shortenedUrl *shortenedUrl) error {
 	dbClient, err := db.GetDbClient(ctx)
 	if err != nil {
 		return err
@@ -40,7 +40,7 @@ func Put(ctx context.Context, shortenedUrl ShortenedUrl) error {
 	return nil
 }
 
-func Get(ctx context.Context, slug string) (*ShortenedUrl, error) {
+func Get(ctx context.Context, slug string) (*shortenedUrl, error) {
 	dbClient, err := db.GetDbClient(ctx)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func Get(ctx context.Context, slug string) (*ShortenedUrl, error) {
 		return nil, nil
 	}
 
-	var shortenedUrl ShortenedUrl
+	var shortenedUrl shortenedUrl
 	err = attributevalue.UnmarshalMap(item.Item, &shortenedUrl)
 	if err != nil {
 		return nil, err
@@ -72,16 +72,27 @@ func Get(ctx context.Context, slug string) (*ShortenedUrl, error) {
 	return &shortenedUrl, nil
 }
 
-type ShortenedUrl struct {
-	Slug string `dynamodbav:"slug"`
-	Url  string `dynamodbav:"url"`
+type shortenedUrl struct {
+	Slug string  `dynamodbav:"slug"`
+	Url  url.URL `dynamodbav:"url"`
 }
 
-func NewShortenedUrl(url url.URL) ShortenedUrl {
-	slug := uuid.New().String()
-
-	return ShortenedUrl{
-		Slug: slug,
-		Url:  url.String(),
+func New(rawUrl string, slug string) (*shortenedUrl, error) {
+	url, err := url.Parse(rawUrl)
+	if err != nil {
+		return nil, err
 	}
+
+	if url.Scheme != "http" && url.Scheme != "https" {
+		return nil, errors.New("Invalid url scheme")
+	}
+
+	if url.Host == "" {
+		return nil, errors.New("Invalid url host")
+	}
+
+	return &shortenedUrl{
+		Slug: slug,
+		Url:  *url,
+	}, nil
 }

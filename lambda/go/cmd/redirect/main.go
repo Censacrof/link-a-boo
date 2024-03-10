@@ -29,13 +29,13 @@ func HandleRedirectRequest(ctx context.Context, event *events.APIGatewayProxyReq
 		return response.NewErrorResponse(fmt.Sprintf("Can't find URL corresponding to slug: %s", slug)).ToApiGatewayProxyResponse(404)
 	}
 
-	resp, err := response.NewOkResponse(redirectResult{Location: shortenedUrl.Url}).ToApiGatewayProxyResponse(301)
+	resp, err := response.NewOkResponse(redirectResult{Location: shortenedUrl.Url.String()}).ToApiGatewayProxyResponse(301)
 	if err != nil {
 		return resp, err
 	}
 
 	resp.Headers = make(map[string]string)
-	resp.Headers["Location"] = shortenedUrl.Url
+	resp.Headers["Location"] = shortenedUrl.Url.String()
 	resp.Headers["Cache-Control"] = "max-age=180, private"
 
 	return resp, nil

@@ -52,7 +52,7 @@ func Test_NewDoesntReturnErrorWhenUrlIsValid(t *testing.T) {
 	}
 }
 
-func Test_NewReturnsErrorIfUrlExceedsMaxLength(t *testing.T) {
+func Test_NewReturnsErrorWhenUrlExceedsMaxLength(t *testing.T) {
 	var sb strings.Builder
 	sb.WriteString("http://my.website.com/")
 
@@ -72,5 +72,28 @@ func Test_NewReturnsErrorIfUrlExceedsMaxLength(t *testing.T) {
 	_, err = New(urlThatsTooLong, "aSlug")
 	if err == nil {
 		t.Fatalf("Expected New to return error when url length is %d characters long", len(urlThatsTooLong))
+	}
+}
+
+func Test_NewReturnsErrorWhenSlugExceedsMaxLength(t *testing.T) {
+	var sb strings.Builder
+	sb.WriteString("http://my.website.com/")
+
+	for sb.Len() < SlugMaxLength {
+		sb.WriteString("a")
+	}
+
+	validSlug := sb.String()
+
+	_, err := New("http://my.website.com/", validSlug)
+	if err != nil {
+		t.Fatalf("Expected New not to return error when slug length is %d characters long. Error returned is: %v", len(validSlug), err)
+	}
+
+	slugThatsTooLong := validSlug + "a"
+
+	_, err = New("http://my.website.com/", slugThatsTooLong)
+	if err == nil {
+		t.Fatalf("Expected New to return error when slug length is %d characters long", len(slugThatsTooLong))
 	}
 }

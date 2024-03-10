@@ -15,6 +15,7 @@ import (
 )
 
 const UrlMaxLength int = 2048
+const SlugMaxLength int = 50
 
 func Put(ctx context.Context, shortenedUrl *shortenedUrl) error {
 	dbClient, err := db.GetDbClient(ctx)
@@ -82,6 +83,10 @@ type shortenedUrl struct {
 func New(rawUrl string, slug string) (*shortenedUrl, error) {
 	if len(rawUrl) > UrlMaxLength {
 		return nil, errors.New(fmt.Sprintf("Url exceeds maximum length of %d characters", UrlMaxLength))
+	}
+
+	if len(slug) > SlugMaxLength {
+		return nil, errors.New(fmt.Sprintf("Slug exceeds maximum length of %d characters", SlugMaxLength))
 	}
 
 	url, err := url.Parse(rawUrl)

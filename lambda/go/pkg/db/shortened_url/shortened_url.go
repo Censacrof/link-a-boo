@@ -14,6 +14,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
+const UrlMaxLength int = 2048
+
 func Put(ctx context.Context, shortenedUrl *shortenedUrl) error {
 	dbClient, err := db.GetDbClient(ctx)
 	if err != nil {
@@ -78,6 +80,10 @@ type shortenedUrl struct {
 }
 
 func New(rawUrl string, slug string) (*shortenedUrl, error) {
+	if len(rawUrl) > UrlMaxLength {
+		return nil, errors.New(fmt.Sprintf("Url exceeds maximum length of %d characters", UrlMaxLength))
+	}
+
 	url, err := url.Parse(rawUrl)
 	if err != nil {
 		return nil, err

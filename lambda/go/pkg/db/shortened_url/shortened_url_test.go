@@ -2,6 +2,7 @@ package shortened_url
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 )
 
@@ -48,5 +49,28 @@ func Test_NewDoesntReturnErrorWhenUrlIsValid(t *testing.T) {
 				t.Fatalf("Expected Slug to be '%s', but got '%s' instead", slug, su.Slug)
 			}
 		})
+	}
+}
+
+func Test_NewReturnsErrorIfUrlExceedsMaxLength(t *testing.T) {
+	var sb strings.Builder
+	sb.WriteString("http://my.website.com/")
+
+	for sb.Len() < UrlMaxLength {
+		sb.WriteString("a")
+	}
+
+	validUrl := sb.String()
+
+	_, err := New(validUrl, "aSlug")
+	if err != nil {
+		t.Fatalf("Expected New not to return error when url length is %d characters long. Error returned is: %v", len(validUrl), err)
+	}
+
+	urlThatsTooLong := validUrl + "a"
+
+	_, err = New(urlThatsTooLong, "aSlug")
+	if err == nil {
+		t.Fatalf("Expected New to return error when url length is %d characters long", len(urlThatsTooLong))
 	}
 }

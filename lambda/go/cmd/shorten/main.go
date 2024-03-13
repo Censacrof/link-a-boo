@@ -18,10 +18,11 @@ import (
 
 type ShortenRequest struct {
 	TargetUrl string `json:"targetUrl" validate:"required,min=5"`
+	Slug      string `json:"slug"`
 }
 
 type ShortenResponse struct {
-	ShortenedUrl string `json:"shortenedUrl"`
+	Slug string `json:"slug"`
 }
 
 func HandleShortenRequest(ctx context.Context, event *events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
@@ -36,8 +37,12 @@ func HandleShortenRequest(ctx context.Context, event *events.APIGatewayProxyRequ
 		return response.NewErrorResponse(fmt.Sprintf("Invalid request: %v", err)).ToApiGatewayProxyResponse(400)
 	}
 
-	slug := uuid.New()
-	shortenedUrl, err := shortened_url.New(shortenRequest.TargetUrl, slug.String())
+	slug := shortenRequest.Slug
+	if shortenRequest.Slug == "" {
+		slug = uuid.New().String()
+	}
+
+	shortenedUrl, err := shortened_url.New(shortenRequest.TargetUrl, slug)
 	if err != nil {
 		return response.NewErrorResponse(fmt.Sprintf("Invalid request: %v", err)).ToApiGatewayProxyResponse(400)
 	}
@@ -49,7 +54,7 @@ func HandleShortenRequest(ctx context.Context, event *events.APIGatewayProxyRequ
 	}
 
 	return response.NewOkResponse(ShortenResponse{
-		ShortenedUrl: shortenedUrl.Slug,
+		Slug: shortenedUrl.Slug,
 	}).ToApiGatewayProxyResponse(200)
 }
 

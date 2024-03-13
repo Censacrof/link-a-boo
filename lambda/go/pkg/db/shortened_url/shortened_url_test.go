@@ -30,6 +30,7 @@ func Test_NewDoesntReturnErrorWhenUrlIsValid(t *testing.T) {
 	testCases := []string{
 		"http://www.mywebsite.com/path/to/stuff#someSection",
 		"https://www.mywebsite.com/path/to/stuff#someSection",
+		"https://asdasdas.localhost.localstack.cloud:4566/gigio/goggi",
 	}
 
 	for _, invalidUrl := range testCases {

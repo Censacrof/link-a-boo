@@ -31,9 +31,11 @@ func Put(ctx context.Context, shortenedUrl *shortenedUrl) error {
 		return fmt.Errorf("Put in table '%s' failed: %w", tableName, err)
 	}
 
+	condition := "attribute_not_exists(slug)"
 	_, err = dbClient.DdbClient.PutItem(ctx, &dynamodb.PutItemInput{
-		Item:      item,
-		TableName: aws.String(tableName),
+		Item:                item,
+		TableName:           aws.String(tableName),
+		ConditionExpression: &condition,
 	})
 
 	if err != nil {

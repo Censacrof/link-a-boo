@@ -16,6 +16,7 @@ import (
 
 const UrlMaxLength int = 2048
 const SlugMaxLength int = 50
+const SlugMinLength int = 4
 
 var ErrSlugAlreadyExists = errors.New("Provided slug already exists")
 
@@ -87,26 +88,33 @@ type shortenedUrl struct {
 	Url  url.URL `dynamodbav:"url"`
 }
 
+var ErrInvalidSlug = errors.New("Slug is not valid")
+var ErrInvalidUrl = errors.New("Url is not valid")
+
 func New(rawUrl string, slug string) (*shortenedUrl, error) {
-	if len(rawUrl) > UrlMaxLength {
-		return nil, errors.New(fmt.Sprintf("Url exceeds maximum length of %d characters", UrlMaxLength))
+	if len(slug) > SlugMaxLength {
+		return nil, ErrInvalidSlug
 	}
 
-	if len(slug) > SlugMaxLength {
-		return nil, errors.New(fmt.Sprintf("Slug exceeds maximum length of %d characters", SlugMaxLength))
+	if len(slug) < SlugMinLength {
+		return nil, ErrInvalidSlug
+	}
+
+	if len(rawUrl) > UrlMaxLength {
+		return nil, ErrInvalidUrl
 	}
 
 	url, err := url.Parse(rawUrl)
 	if err != nil {
-		return nil, err
+		return nil, ErrInvalidUrl
 	}
 
 	if url.Scheme != "http" && url.Scheme != "https" {
-		return nil, errors.New("Invalid url scheme")
+		return nil, ErrInvalidUrl
 	}
 
 	if url.Host == "" {
-		return nil, errors.New("Invalid url host")
+		return nil, ErrInvalidUrl
 	}
 
 	return &shortenedUrl{

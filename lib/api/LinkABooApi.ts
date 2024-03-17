@@ -35,6 +35,28 @@ export class LinkABooApi extends Construct {
     const shortenResource = api.root.addResource("shorten");
     shortenResource.addMethod("POST", shortenIntegration);
 
+    // validate
+    const validateLambda = new lambda.Function(this, "validateLambda", {
+      runtime: lambda.Runtime.PROVIDED_AL2,
+      code: lambda.Code.fromDockerBuild("lambda/go", {
+        buildArgs: {
+          CMD_NAME: "validate",
+        },
+      }),
+      handler: "validate",
+      environment: {
+        URLS_TABLE_NAME: props.db.urlsTable.tableName,
+      },
+    });
+
+    props.db.urlsTable.grantReadWriteData(validateLambda);
+
+    const validateIntegration = new apigateway.LambdaIntegration(
+      validateLambda,
+    );
+    const validateResource = api.root.addResource("validate");
+    validateResource.addMethod("GET", validateIntegration);
+
     // redirect
     const redirectLambda = new lambda.Function(this, "redirectLambda", {
       runtime: lambda.Runtime.PROVIDED_AL2,

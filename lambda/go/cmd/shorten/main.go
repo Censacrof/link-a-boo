@@ -48,14 +48,17 @@ func HandleShortenRequest(ctx context.Context, event *events.APIGatewayProxyRequ
 	}
 
 	err = shortened_url.Put(ctx, shortenedUrl)
-
 	if err != nil {
+		if errors.Is(err, shortened_url.ErrSlugAlreadyExists) {
+			return response.NewErrorResponse("Slug already exists").ToApiGatewayProxyResponse(409)
+		}
+
 		return response.NewErrorResponse(fmt.Sprintf("Internal server error: %v", err)).ToApiGatewayProxyResponse(500)
 	}
 
 	return response.NewOkResponse(ShortenResponse{
 		Slug: shortenedUrl.Slug,
-	}).ToApiGatewayProxyResponse(200)
+	}).ToApiGatewayProxyResponse(201)
 }
 
 func main() {

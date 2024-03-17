@@ -17,6 +17,8 @@ import (
 const UrlMaxLength int = 2048
 const SlugMaxLength int = 50
 
+var ErrSlugAlreadyExists = errors.New("Provided slug already exists")
+
 func Put(ctx context.Context, shortenedUrl *shortenedUrl) error {
 	dbClient, err := db.GetDbClient(ctx)
 	if err != nil {
@@ -39,6 +41,9 @@ func Put(ctx context.Context, shortenedUrl *shortenedUrl) error {
 	})
 
 	if err != nil {
+		if e := new(types.ConditionalCheckFailedException); errors.As(err, &e) {
+			return ErrSlugAlreadyExists
+		}
 		return fmt.Errorf("Put in table '%s' failed: %w", tableName, err)
 	}
 

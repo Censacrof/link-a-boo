@@ -12,12 +12,10 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/aws/aws-lambda-go/events"
-
-	"github.com/go-playground/validator/v10"
 )
 
 type ShortenRequest struct {
-	Url  string `json:"Url" validate:"required,min=5"`
+	Url  string `json:"Url"`
 	Slug string `json:"slug"`
 }
 
@@ -27,12 +25,7 @@ type ShortenResponse struct {
 
 func HandleShortenRequest(ctx context.Context, event *events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
 	var shortenRequest ShortenRequest
-	unmarshalErr := json.Unmarshal([]byte(event.Body), &shortenRequest)
-
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	validationErr := validate.Struct(shortenRequest)
-
-	err := errors.Join(unmarshalErr, validationErr)
+	err := json.Unmarshal([]byte(event.Body), &shortenRequest)
 	if err != nil {
 		return response.NewErrorResponse(fmt.Sprintf("Invalid request: %v", err)).ToApiGatewayProxyResponse(400)
 	}

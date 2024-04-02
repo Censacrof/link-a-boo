@@ -8,7 +8,8 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "gen:redoc": "npx @redocly/cli build-docs redoc/openapi.yaml -o redoc/index.html"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",

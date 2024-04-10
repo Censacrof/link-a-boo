@@ -31,6 +31,14 @@ paths:
               description: The URL to redirect to.
         "404":
           description: Not found. The slug does not exist.
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    enum: ["tag:censacrof@github.com:SlugNotFound"]
   /shorten:
     post:
       summary: Validate URL and slug
@@ -49,7 +57,7 @@ paths:
         "400":
           description: Bad request. The provided slug or URL is invalid.
           content:
-            application/json+problem:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -63,7 +71,7 @@ paths:
         "409":
           description: Conflict. The slug is already in use.
           content:
-            application/json+problem:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -88,7 +96,7 @@ paths:
         "400":
           description: Bad request. The provided slug or URL is invalid.
           content:
-            application/json+problem:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -102,7 +110,7 @@ paths:
         "409":
           description: Conflict. The slug is already in use.
           content:
-            application/json+problem:
+            application/problem+json:
               schema:
                 type: object
                 properties:

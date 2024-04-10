@@ -41,8 +41,8 @@ paths:
                     enum: ["tag:censacrof@github.com:SlugNotFound"]
   /shorten:
     post:
-      summary: Validate URL and slug
-      description: Checks if the passed URL and slug are available and valid without creating anything in the database.
+      summary: Create shortened URL
+      description: Creates new shortened URL with given slug
       tags:
         - URL Shortening
       requestBody:

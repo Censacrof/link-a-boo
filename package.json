@@ -12,6 +12,7 @@
     "gen:redoc": "npx @redocly/cli build-docs redoc/openapi.yaml -o redoc/index.html"
   },
   "devDependencies": {
+    "@redocly/cli": "^1.11.0",
     "@types/jest": "^29.5.12",
     "@types/node": "20.11.19",
     "aws-cdk": "2.130.0",

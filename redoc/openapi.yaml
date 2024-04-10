@@ -101,12 +101,38 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: The URL and slug are valid and available.
+                $ref: "#/components/schemas/ShortenedUrl"
         "400":
           description: Bad request. The provided slug or URL is invalid.
+          content:
+            application/json+problem:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    enum:
+                      [
+                        "tag:censacrof@github.com:InvalidSlug",
+                        "tag:censacrof@github.com:InvalidURL",
+                      ]
         "409":
           description: Conflict. The slug is already in use.
+          content:
+            application/json+problem:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    enum: ["tag:censacrof@github.com:SlugAlreadyInUse"]
+components:
+  schemas:
+    ShortenedUrl:
+      type: object
+      properties:
+        slug:
+          type: string
+        url:
+          type: string
+          format: URL

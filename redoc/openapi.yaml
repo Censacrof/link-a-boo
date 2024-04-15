@@ -52,10 +52,23 @@ paths:
             schema:
               $ref: "#/components/schemas/ShortenedUrl"
       responses:
-        "204":
-          description: The URL and slug are valid and available.
+        "201":
+          description: The shortened URL has been created successfully
+          content:
+            application/json:
+              $ref: "#/components/schemas/ShortenedUrl"
         "400":
-          description: Bad request. The provided slug or URL is invalid.
+          description: Bad request.
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    enum: ["tag:censacrof@github.com:BadRequest"]
+        "422":
+          description: Unprocessable entity.
           content:
             application/problem+json:
               schema:
@@ -94,7 +107,17 @@ paths:
         "204":
           description: The URL and slug are valid and available.
         "400":
-          description: Bad request. The provided slug or URL is invalid.
+          description: Bad request.
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    enum: ["tag:censacrof@github.com:BadRequest"]
+        "422":
+          description: Unprocessable entity.
           content:
             application/problem+json:
               schema:
